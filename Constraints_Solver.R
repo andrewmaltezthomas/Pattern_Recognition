@@ -1,7 +1,7 @@
 ## What this script does:
 ## Checks to see if pairs of genes can linearly separate BRACA1 and BRACA2 samples using LP solvers. 
 -----------------------## CARREGAR BIBLIOTECAS ##-------------------------------------------------------------------------------------------------------------------------
-library(RCurl)
+library(RCurl) 
 library(MASS)
 library(lpSolve)
 -----------------------## PEGAR E PREPARAR OS DADOS ##-------------------------------------------------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ for (i in 1:ncol(labels)) {
     labels[i] = +1
   }else {
     labels[i] = -1}}
-h
+
 ## Transformar classes em matriz de vetores
 vector_y <- as.data.frame(labels)
 vector_y <- t(vector_y)
@@ -84,13 +84,13 @@ matrix_g <- function(dados, gene1, gene2, Y) {
   rows <- sample_size + 1
   gene1 <- gene_combinations[1,i]
   gene2 <- gene_combinations[2,i]
-  G <- matrix(-1, nrow = rows, ncol= 4)
+  G <- matrix(1, nrow = rows, ncol= 4)
   for (j in 1:length(dados[gene1,])) {
-    G[j,1] <- (-1 * Y[j]) * dados[gene1,j]
+    G[j,2] <- (-1 * Y[j]) * dados[gene1,j]
   }
   for (k in 1:length(dados[gene2,])) {
-    G[k,2] <- (-1 * Y[k]) * dados[gene2,k]
-    G[k,3] <- (-1 * Y[k])
+    G[k,3] <- (-1 * Y[k]) * dados[gene2,k]
+    G[k,1] <- (-1 * Y[k])
   }
   G[,4] <- -1
   G[rows,1:3] <- 0
@@ -102,20 +102,18 @@ matrix_h <- function(dados) {
   sample_size <- ncol(dados)
   h <- matrix(-1, nrow = sample_size + 1, ncol= 1)
   h[sample_size + 1,] = 0
-  h <- t(h)
   return(h)
 }
 
 ## Função para gerar a matrix c
 matrix_c <- function() {
-  c <- c(0, 0, 0, 1)
+  c <- as.matrix(c(0, 0, 0, 1), ncol=1)
   return(c)
 }
 
 ## Função do solver
-lp_solver <- function(c, G, h) {
-  dir <- rep("<=", 16)
-  solution <- lp("min", c, G, dir, h)$solution
+lp_solver <- function(c, h, G) {
+  solution <- solveLP(cvec = c, bvec = h, Amat = G, maximum = F, const.dir =  rep("<=", 16))$solution
   print(solution)
 }
 
@@ -155,7 +153,7 @@ for (i in 1:ncol(gene_combinations)) {
     h <- matrix_h(data_mod)
       
     ## Resolver o LP
-    solution <- lp_solver(c, G, h)
+    solution <- lp_solver(c, h, G)
       
     if ( solution[4] == 0) {
       ls_genes <- ls_genes + 1
@@ -167,12 +165,12 @@ for (i in 1:ncol(gene_combinations)) {
       solver_ls_genes.df[ls_genes,]$Weight2 <- solution[2]
       solver_ls_genes.df[ls_genes,]$Bias <- solution[3]
       solver_ls_genes.df[ls_genes,]$Min_Tau <- solution[4]
-      } 
+      }
   print(paste("Number of pairs evaluated:", paired_genes))
   print(paste("Genes with 0 points missclassified:",genes_0_counts))
+  #}
 }
 
-rm(solver_ls_genes.df)
 gene_combinations.df <- gene_combinations.df[1:10,]
 
 ## Criar a tabela em txt
