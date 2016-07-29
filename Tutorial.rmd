@@ -1,0 +1,42 @@
+## Case study using HMP data: Buccal Mucosa and Tongue Dorsum
+This tutorial is aimed at showing researchers how to conduct different comparative metagenomic analyses, as those seen in the book chapter "Comparative Metagenomics"", part of Comparative Genomics, Methods in Molecular Biology Setubal, Stadler, Stoye (Eds.). 
+
+**All of the code in this page is meant to be run on the command line unless otherwise stated.**
+
+First, download metadata from the HMP's website:
+```{r eval=FALSE, engine='bash'}
+# Download list of shotgun samples
+wget http://hmpdacc.org/HMASM/HMASM-690.csv
+
+# Download list of 16S samples
+wget http://downloads.hmpdacc.org/data/HMR16S/SRP002395_metadata_lmd.tar.gz
+
+# Uncompress it
+tar -zxvf SRP002395_metadata_lmd.tar.gz
+```
+
+Filter 16S "Buccal mucosa" and "Tongue Dorsum" sample runs by the V3-V5 regions (same region for both):
+```{r eval=FALSE, engine='bash'}
+# Buccal mucosa
+grep -h "Buccal mucosa" corrected-metadata-v1/* | grep "V5-V3" | awk -F"\t" '$1 != "NULL"' > BuccalMucosa-16S-AllRuns.tsv
+
+# Tongue dorsum
+grep -h "Tongue dorsum" corrected-metadata-v1/* | grep "V5-V3" | awk -F"\t" '$1 != "NULL"' > TongueDorsum-16S-AllRuns.tsv
+```
+
+Intersect 16S and shotgun samples which have runs for both sequencing methods (just SRS):
+```{r eval=FALSE, engine='bash'}
+# SRS which have shotgun for "Buccal Mucosa"
+awk -F"\t" '{print $10}' BuccalMucosa-16S-AllRuns.tsv | sort | uniq | while read SRS
+do
+  grep $SRS HMASM-690.csv
+done | grep -o "SRS[0-9]*" | head -n 10 > BuccalMucosa-16S-WGS-10Samples.tsv
+
+# SRS which has shotgun for "Tongue Dorsum"
+awk -F"\t" '{print $10}' TongueDorsum-16S-AllRuns.tsv | sort | uniq | while read SRS
+do
+  grep $SRS HMASM-690.csv 
+done | grep -o "SRS[0-9]*" | head -n 10 > TongueDorsum-16S-WGS-10Samples.tsv
+```
+
+
