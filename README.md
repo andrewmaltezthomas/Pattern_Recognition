@@ -3,7 +3,7 @@ Python and R codes used for the pattern recognition discipline @ USP using micro
 
 #### Available codes for linearly separable binary classifications:
 * Linear Regression: Mean Square Error (MSE) classifier
-* Finding linearly separable gene pairs using linear programming solvers
+* Finding linearly separable gene pairs using linear programming constraint solvers
 * Support vector machines: Maximum margin 
 * Support vector machines: Soft margin
 * Support vector machines: Soft margin with bolstered error estimation
