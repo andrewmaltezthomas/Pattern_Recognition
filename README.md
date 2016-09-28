@@ -1,7 +1,12 @@
 # Pattern Recognition
-R codes used for the pattern recognition discipline @ USP. 
+Python and R codes used for the pattern recognition discipline @ USP using microarray RNA expression data obtained from breast cancer patients that had mutations in the BRACA1 or the BRACA2 genes. 
 
-#### Available codes for linearly separable classifications:
-* Minimal Square Root (MSE) classifier
-* Constraints using linear programming solvers
+#### Available codes for linearly separable binary classifications:
+* Linear Regression: Mean Square Error (MSE) classifier
+* Finding linearly separable gene pairs using linear programming solvers
+* Support vector machines: Maximum margin 
+* Support vector machines: Soft margin
+* Support vector machines: Soft margin with bolstered error estimation
+* Support vector machines: Using a gaussian kernel
+
 
