@@ -7,6 +7,5 @@ Python and R codes used for the pattern recognition discipline @ USP using micro
 * Support vector machines: Maximum margin 
 * Support vector machines: Soft margin
 * Support vector machines: Soft margin with bolstered error estimation
-* Support vector machines: Using a gaussian kernel
 
 
