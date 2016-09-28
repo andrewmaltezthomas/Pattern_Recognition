@@ -1,19 +1,19 @@
 ## What this script does:
 ## Classifies BRACA1 and BRACA2 samples using an MSE classifier and returns the first 10 pairs of genes that can separate both
 ## groups linearly
------------------------## CARREGAR BIBLIOTECAS ##-------------------------------------------------------------------------------------------------------------------------
+###-----------------------## LOAD THE LIBRARIES ##-------------------------------------------------------------------------------------------------------------------------
 library(RCurl)
 library(MASS)
------------------------## PEGAR E PREPARAR OS DADOS ##-------------------------------------------------------------------------------------------------------------------------
-## Pegar o arquivo
+###-----------------------## GET AND PREPROCESS THE DATA ##-------------------------------------------------------------------------------------------------------------------------
+## Get the microarray data
 url <- getURL("http://yeast.ime.usp.br/~ronaldo/ibi5031-2013/data_breast_cancer.csv")
 data <- read.csv(text = url, header = T, row.names=1)
 
-## Pegar somente pacientes BRACA1/BRACA2
+## Filter to include only the BRACA1/BRACA2 patients
 braca <- c("P01","P02","P03","P04","P05","P06","P07","P08","P09","P10","P18","P19","P20","P21","P22")
 data <- data[braca]
 
-## Pegar as classes
+## Get the classes
 labels_plot <- data[3227,]
 labels <- data[3227,]
 for (i in 1:ncol(labels)) {
@@ -22,26 +22,26 @@ for (i in 1:ncol(labels)) {
   }else {
     labels[i] = -1}}
 
-## Transformar classes em matriz de vetores
+## Transform the classes in a matrix of vectors
 vector_y <- as.data.frame(labels)
 vector_y <- t(vector_y)
 
-# Pre-processar os dados
+# Pre-process the data
 data <- data[1:3226,]
 data_mod <- matrix(as.numeric(as.matrix(data)), nrow = nrow(data))
 colnames(data_mod) <- colnames(data)
 rownames(data_mod) <- rownames(data)
 colunas <- colnames(data_mod)
 
-## Pegar todas combinações de genes 2 a 2 
+## Get all possible 2 by 2 gene combinations
 gene_list <- rownames(data_mod)
 gene_combinations <- combn(gene_list, 2)
 
-## Montar a tabela de resultados
+## Create a table with the results of the MSE classifier
 gene_combinations.df <- matrix(0, nrow = 11, ncol = 6)
 gene_combinations.df <- as.data.frame(gene_combinations.df)
 colnames(gene_combinations.df) <- c("Gene1", "Gene2", "bad_points", "bias", "weight1", "weight2")
------------------------## FUNÇÕES ##-------------------------------------------------------------------------------------------------------------------------
+###-----------------------## FUNCTIONS ##-------------------------------------------------------------------------------------------------------------------------
 ## Função para gerar a matrix X
 matrix_vector_genes <- function(dados, gene1, gene2) {
   sample_size <- ncol(dados)
@@ -72,27 +72,28 @@ count_missclassifications <- function(a, X, Y) {
   }
   return(counts)
 }
------------------------## RODAR AS ANÁLISES ##-------------------------------------------------------------------------------------------------------------------------
-## Para cada combinação de genes
+###-----------------------## RUN THE ANALYSIS ##-------------------------------------------------------------------------------------------------------------------------
+## For each gene pair combination
 paired_genes <- 0
 genes_0_counts <- 0
 for (i in 1:ncol(gene_combinations)) {
   paired_genes <- paired_genes + 1
   if (genes_0_counts <= 10) {
     i <- sample(1:5201925, 1)
-    ## Gerar a matrix X
+    
+    ## Generate the X matrix 
     X <- matrix_vector_genes(data_mod, gene_combinations[1,i], gene_combinations[2,i])
   
-    ## Calcular o MSE
+    ## Calculate the MSE
     a <- mse_calc(X, vector_y)
   
-    ## Calcular o número de pontos malclassificados
+    ## Calculate the number of misclassifications
     bad_points <- count_missclassifications(a, X, vector_y)
     
     if (bad_points == 0) {
       genes_0_counts <- genes_0_counts + 1
       
-      ## Inserir os resultados na tabela
+      ## Insert the results in the table
       gene_combinations.df[genes_0_counts,]$Gene1 <- gene_combinations[1,i]
       gene_combinations.df[genes_0_counts,]$Gene2 <- gene_combinations[2,i]
       gene_combinations.df[genes_0_counts,]$bad_points <- bad_points
@@ -111,9 +112,9 @@ for (i in 1:ncol(gene_combinations)) {
 
 gene_combinations.df <- gene_combinations.df[1:10,]
 
-## Criar a tabela em txt
+## Write results to txt
 write.table(gene_combinations.df, "Linearly.Separable.Gene.Pairs.txt", quote = F, row.names = F, col.names = T, sep = "\t")
------------------------## PLOTAR OS RESULTADOS ##-------------------------------------------------------------------------------------------------------------------------
+###-----------------------## PLOT THE RESULTS ##-------------------------------------------------------------------------------------------------------------------------
 rownames(labels_plot) <- "Group"
 labels_plot <- t(labels_plot)
 for (i in 1:nrow(gene_combinations.df)) {
@@ -138,5 +139,3 @@ for (i in 1:nrow(gene_combinations.df)) {
   legend("bottomright", pch=c(19,19), col=c("black", "red"), c("BRACA1", "BRACA2"), bty="n",  box.col="black", box.lwd = 0)
   dev.off()
 }
-
-
